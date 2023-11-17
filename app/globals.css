@@ -20,9 +20,9 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-foreground/20;
+@layer components {
+  .title{
+    @apply text-3xl font-bold text-center
   }
 }
 

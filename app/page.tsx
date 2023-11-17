@@ -1,57 +1,115 @@
-import DeployButton from '../components/DeployButton'
-import AuthButton from '../components/AuthButton'
+import Image from 'next/image'
+import DoctorPatient from '@/public/assets/doctor-patient.png'
+import Logo from '@/public/assets/logo.svg'
+import { headers, cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
-import ConnectSupabaseSteps from '@/components/ConnectSupabaseSteps'
-import SignUpUserSteps from '@/components/SignUpUserSteps'
-import Header from '@/components/Header'
-import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
-export default async function Index() {
-  const cookieStore = cookies()
 
-  const canInitSupabaseClient = () => {
-    // This function is just for the interactive tutorial.
-    // Feel free to remove it once you have Supabase connected.
-    try {
-      createClient(cookieStore)
-      return true
-    } catch (e) {
-      return false
-    }
+export default function index({
+  searchParams,
+}: {
+  searchParams: { message: string }
+}) {
+  const signIn = async (formData: FormData) => {
+      'use server'
+
+      const email = formData.get('email') as string
+      const password = formData.get('password') as string
+      const cookieStore = cookies()
+      const supabase = createClient(cookieStore)
+
+      const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+      })
+
+      if (error) {
+          return redirect('/?message=Could not authenticate user')
+      }
+
+      return redirect('/dashboard')
   }
 
-  const isSupabaseConnected = canInitSupabaseClient()
+  const signUp = async (formData: FormData) => {
+      'use server'
+
+      const origin = headers().get('origin')
+      const email = formData.get('email') as string
+      const password = formData.get('password') as string
+      const cookieStore = cookies()
+      const supabase = createClient(cookieStore)
+
+      const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+              emailRedirectTo: `${origin}/auth/callback`,
+          },
+      })
+
+      if (error) {
+          return redirect('/?message=Could not authenticate user')
+      }
+
+      return redirect('/dashboard?message=Check email to continue sign in process')
+  }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-20 items-center">
-      <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-        <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
-          <DeployButton />
-          {isSupabaseConnected && <AuthButton />}
+    <div className="flex w-full flex max-w-5xl h-screen items-center gap-5">
+      <div className='w-2/3 bg-indigo-500 flex justify-center items-center h-1/2 shadow-2xl rounded-sm'>
+        <div className='items-center'>
+          <div className='flex items-center justify-center mb-5'>
+            <Image src={Logo} alt='logo' className='pr-2' />
+            <p className='title'>Oregon Health</p>
+          </div>
+          <p className='text-lg font-bold text-center'>Instant Doctor Visitaion</p>
+          <p className='mb-8 text-sm text-center'>Be seen and taken cared for without the wait.</p>
+          <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
+            <form
+                className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
+                action={signIn}
+            >
+                <label className="text-md" htmlFor="email">
+                    Email
+                </label>
+                <input
+                    className="rounded-sm px-4 py-2 bg-inherit border mb-6 focus:outline-none"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                />
+                <label className="text-md" htmlFor="password">
+                    Password
+                </label>
+                <input
+                    className="rounded-sm px-4 py-2 bg-inherit border mb-6 focus:outline-none"
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    required
+                />
+                <button className="bg-indigo-900 rounded-sm px-4 py-2 text-foreground mb-2">
+                    Sign In
+                </button>
+                <button
+                    formAction={signUp}
+                    className="border border-foreground/20 rounded-sm px-4 py-2 text-foreground mb-2"
+                >
+                    Sign Up
+                </button>
+                {searchParams?.message && (
+                    <p className="mt-4 p-4 bg-foreground/10 text-white text-center">
+                        {searchParams.message}
+                    </p>
+                )}
+            </form>
         </div>
-      </nav>
-
-      <div className="animate-in flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3">
-        <Header />
-        <main className="flex-1 flex flex-col gap-6">
-          <h2 className="font-bold text-4xl mb-4">Next steps</h2>
-          {isSupabaseConnected ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-        </main>
+        </div>
       </div>
-
-      <footer className="w-full border-t border-t-foreground/10 p-8 flex justify-center text-center text-xs">
-        <p>
-          Powered by{' '}
-          <a
-            href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-            target="_blank"
-            className="font-bold hover:underline"
-            rel="noreferrer"
-          >
-            Supabase
-          </a>
-        </p>
-      </footer>
+      <div className='w-full bg-slate-300 text-indigo-500 flex justify-center items-center h-1/2 flex-col rounded-sm'>
+        <Image src={DoctorPatient} alt='graphic image' className='w-full' />
+      </div>
     </div>
   )
 }
