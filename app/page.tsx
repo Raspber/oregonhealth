@@ -57,7 +57,7 @@ export default function index({
 
     return (
         <div className="flex w-full flex max-w-5xl h-screen items-center gap-5">
-            <div className='w-2/3 bg-indigo-500 flex justify-center items-center h-1/2 shadow-2xl rounded-sm'>
+            <div id='firstBox' className='w-2/3 bg-indigo-500 flex justify-center items-center h-1/2 shadow-2xl rounded-sm'>
                 <div className='items-center'>
                     <div className='flex items-center justify-center mb-5'>
                         <Image src={Logo} alt='logo' className='pr-2' />
@@ -107,7 +107,7 @@ export default function index({
                     </div>
                 </div>
             </div>
-            <div className='w-full bg-slate-300 text-indigo-500 flex justify-center items-center h-1/2 flex-col rounded-sm'>
+            <div id='secondBox' className='w-full bg-slate-300 text-indigo-500 flex justify-center items-center h-1/2 flex-col rounded-sm'>
                 <Image src={DoctorPatient} alt='graphic image' className='w-full' />
             </div>
         </div>
